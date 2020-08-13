@@ -35,6 +35,9 @@ export function createTechnicalIndicators () {
   }
 }
 
+import Bar from '../Bar'
+interface  calcTechnicalIndicatorFunc {dataList:Array<Bar>, calcParams:Array<any>}
+
 /**
  * 创建一个新的技术指标
  * @param name

@@ -4,7 +4,8 @@ import { createNewTechnicalIndicator, createTechnicalIndicators } from './techni
 export default class ChartData {
     _styleOptions:any
     _invalidateHandler:any
-
+    _technicalIndicators:any
+    
     constructor (styleOptions:any, invalidateHandler:any) {
       // 刷新持有者
       this._invalidateHandler = invalidateHandler
