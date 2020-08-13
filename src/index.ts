@@ -12,7 +12,10 @@
  * limitations under the License.
  */
 
-import Chart from './Chart'
+let message: string = 'Hello World';
+console.log(message);
+
+import Chart from "./Chart.js"
 import { DEV } from './utils/env'
 
 const instances:any = {}
@@ -23,7 +26,7 @@ const CHART_NAME_PREFIX = 'k_line_chart_'
  * 获取版本号
  * @returns {string}
  */
-function version () {
+function version (): string {
   return '__BUILD_VERSION__'
 }
 
@@ -33,7 +36,7 @@ function version () {
  * @param style
  * @returns {Chart}
  */
-function init (ds:any, style = {}) {
+function init (ds:any, style = {}) :Chart{
   const errorMessage = 'Chart version is __BUILD_VERSION__. Root dom is null, can not initialize the chart!!!'
   let container = ds
   if (!container) {
