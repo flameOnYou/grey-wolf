@@ -6,7 +6,8 @@ import { formatValue } from '../utils/format'
 import TechnicalIndicator, { TechnicalIndicatorSeries } from './technicalindicator/TechnicalIndicator'
 import { DEV } from '../utils/env'
 import { Point, CrossHair } from '../utils/shape'
-import Pane from '../pane/Pane'
+import TechnicalIndicatorPane from '../pane/TechnicalIndicatorPane'
+
 
 const MAX_DATA_SPACE = 30
 const MIN_DATA_SPACE = 3
@@ -77,7 +78,7 @@ export default class ChartData {
     // 当前绘制的标记图形的类型
     _graphicMarkType = GraphicMarkType.NONE
     // 标记图形点
-    _graphicMarkPoint :Point
+    _graphicMarkPoint :Point | null
     // 拖拽标记图形标记
     _dragGraphicMarkFlag = false
     // 绘图标记数据
@@ -382,7 +383,7 @@ export default class ChartData {
      * @param pos
      * @param more
      */
-    addDataList (data:Bar, pos:number){
+    addDataList (data:Bar, pos:number,more:boolean){
       const dataSize = this._dataList.length
       if (pos >= dataSize) {
         this._dataList.push(data)
@@ -395,7 +396,7 @@ export default class ChartData {
       }
     }
 
-    addData (data:Array<Bar>) {
+    addData (data:Array<Bar>,pos:number) {
       this._loading = false
       const isFirstAdd = this._dataList.length === 0
       this._dataList = data.concat(this._dataList)
@@ -513,9 +514,9 @@ export default class ChartData {
      * @param point
      * @param paneTag
      */
-    setCrossHairPointPaneTag (point:Point, paneTag:any) {
+    setCrossHairPointPaneTag (point:Point | null, paneTag:any) {
       const crossHair = new CrossHair()
-      if (point) {
+      if (point != null) {
         crossHair.x = point.x
         crossHair.y = point.y
         crossHair.paneTag = this._crossHair.paneTag
@@ -562,8 +563,8 @@ export default class ChartData {
      * @param scale
      * @param point
      */
-    zoom (scale:number, point:Point) {
-      if (!point || isValid(point.x)) {
+    zoom (scale:number, point:Point|null) {
+      if (!point || isValid(point.x) || point == null) {
         const x =  isValid(this._crossHair.x) ? this._crossHair.x : this._totalDataSpace / 2 
         point = new Point(x, 0)
       }
@@ -725,7 +726,7 @@ export default class ChartData {
         technicalIndicator.setCalcParams(calcParams)
         
         technicalIndicator.result = technicalIndicator.calcTechnicalIndicator(this._dataList, technicalIndicator.calcParams) || []
-        technicalIndicator.geometrys = technicalIndicator.calcGeometrys(this._dataList, technicalIndicator.calcParams) || []
+        // technicalIndicator.geometrys = technicalIndicator.calcGeometrys(this._dataList, technicalIndicator.calcParams) || []
         pane.computeAxis()
       }
     }

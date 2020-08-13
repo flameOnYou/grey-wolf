@@ -12,17 +12,18 @@
  * limitations under the License.
  */
 
-import Axis from './Axis'
+import Axis, { Tick } from './Axis'
 import { YAxisType } from '../data/options/styleOptions'
 import { isNumber, isValid } from '../utils/typeChecks'
 import { calcTextWidth, getFont } from '../utils/canvas'
 import { formatBigNumber, formatPrecision } from '../utils/format'
+import ChartData from '../data/ChartData'
 
 export default class YAxis extends Axis {
-  constructor (chartData, isCandleStickYAxis, additionalDataProvider) {
+  constructor (chartData:ChartData, 
+    public _isCandleStickYAxis:boolean,
+    public _additionalDataProvider:any) {
     super(chartData)
-    this._isCandleStickYAxis = isCandleStickYAxis
-    this._additionalDataProvider = additionalDataProvider
   }
 
   _computeMinMaxValue () {
@@ -36,8 +37,8 @@ export default class YAxis extends Axis {
     return { min, max, range }
   }
 
-  _computeOptimalTicks (ticks:any) {
-    const optimalTicks = []
+  _computeOptimalTicks (ticks:Array<Tick>) {
+    const optimalTicks:Tick[] = new Array()
     const tickLength = ticks.length
     if (tickLength > 0) {
       const textHeight = this._chartData.styleOptions().xAxis.tickText.size
@@ -69,7 +70,9 @@ export default class YAxis extends Axis {
         }
         if (y > textHeight &&
           y < this._height - textHeight) {
-          optimalTicks.push({ v: value, y })
+            
+            optimalTicks.push(new Tick(value,y,0))
+          // optimalTicks.push({ v: value, y })
         }
       }
     }
@@ -101,7 +104,7 @@ export default class YAxis extends Axis {
         }
       }
     } else {
-      const plots = technicalIndicator.plots || []
+      const plots:any[] = technicalIndicator.plots || []
       for (let i = from; i < to; i++) {
         const kLineData = dataList[i]
         const technicalIndicatorData = technicalIndicatorResult[i] || {}
@@ -151,7 +154,7 @@ export default class YAxis extends Axis {
     }
   }
 
-  _innerConvertToPixel (value) {
+  _innerConvertToPixel (value:number) {
     return Math.round((1.0 - (value - this._minValue) / this._range) * this._height)
   }
 

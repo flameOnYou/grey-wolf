@@ -26,7 +26,7 @@ export enum TechnicalIndicatorSeries{
 
 export default class TechnicalIndicator {
 
-    result:any
+    result:any[]
 
   constructor (
     public name:string, 
@@ -88,7 +88,10 @@ export default class TechnicalIndicator {
   /**
    * 计算技术指标
    */
-  calcTechnicalIndicator (dataList:Array<Bar>, calcParams:Array<any>) {}
+  calcTechnicalIndicator (dataList:Array<Bar>, calcParams:Array<any>):any[] {
+    const arr:any[]= new Array();
+    return arr
+  }
 
 
   /**

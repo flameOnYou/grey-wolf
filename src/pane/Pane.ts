@@ -15,13 +15,14 @@
 import { getPixelRatio } from '../utils/canvas'
 import ChartData from '../data/ChartData'
 import Widget from '../widget/Widget'
+import YAxisWidget from '../widget/YAxisWidget'
 
-export default class Pane {
+export abstract class Pane {
   _height :number
   _container :HTMLElement
   _chartData :ChartData
-
-  _mainWidget :Widget
+  _element!:HTMLElement
+  _mainWidget:Widget
   _yAxisWidget : YAxisWidget
 
   constructor (props:any) {
@@ -34,7 +35,7 @@ export default class Pane {
     this._yAxisWidget = this._createYAxisWidget(this._element, props)
   }
 
-  _initBefore (props) {}
+  _initBefore (props:any) {}
 
   _initElement () {
     this._element = document.createElement('div')
@@ -57,7 +58,7 @@ export default class Pane {
    * @param props
    * @private
    */
-  _createMainWidget (container, props) {}
+  abstract _createMainWidget (container:HTMLElement, props:any):Widget
 
   /**
    * 创建y轴组件
@@ -65,7 +66,7 @@ export default class Pane {
    * @param props
    * @private
    */
-  _createYAxisWidget (container, props) {}
+  abstract _createYAxisWidget (container:HTMLElement, props:any):YAxisWidget;
 
   /**
    * 计算轴
@@ -81,7 +82,7 @@ export default class Pane {
     return this._element.offsetWidth
   }
 
-  setWidth (mainWidgetWidth, yAxisWidgetWidth) {
+  setWidth (mainWidgetWidth:number, yAxisWidgetWidth:number) {
     this._mainWidget.setWidth(mainWidgetWidth)
     this._yAxisWidget && this._yAxisWidget.setWidth(yAxisWidgetWidth)
   }
@@ -97,13 +98,13 @@ export default class Pane {
    * 设置临时高度
    * @param height
    */
-  setHeight (height) {
+  setHeight (height:number) {
     this._height = height
     this._mainWidget.setHeight(height)
     this._yAxisWidget && this._yAxisWidget.setHeight(height)
   }
 
-  setOffsetLeft (mainWidgetOffsetLeft, yAxisWidgetOffsetLeft) {
+  setOffsetLeft (mainWidgetOffsetLeft:number, yAxisWidgetOffsetLeft:number) {
     this._mainWidget.setOffsetLeft(mainWidgetOffsetLeft)
     this._yAxisWidget && this._yAxisWidget.setOffsetLeft(yAxisWidgetOffsetLeft)
   }
@@ -120,14 +121,14 @@ export default class Pane {
    * 刷新
    * @param level
    */
-  invalidate (level) {
+  invalidate (level:number) {
     this._yAxisWidget && this._yAxisWidget.invalidate(level)
     this._mainWidget.invalidate(level)
   }
 
-  getImage (includeFloatLayer, includeGraphicMark) {
+  getImage (includeFloatLayer:number, includeGraphicMark:number) {
     const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
+    const ctx = <CanvasRenderingContext2D>canvas.getContext('2d')
     const pixelRatio = getPixelRatio(ctx)
     const width = this._element.offsetWidth
     const height = this._element.offsetHeight
@@ -153,7 +154,7 @@ export default class Pane {
       const yAxisWidgetHeight = yAxisWidgetElement.offsetHeight
       const yAxisWidgetOffsetLeft = parseInt(yAxisWidgetElement.style.left, 10)
       ctx.drawImage(
-        this._yAxisWidget.getImage(includeFloatLayer),
+        this._yAxisWidget.getImage(includeFloatLayer,null),
         yAxisWidgetOffsetLeft, 0,
         yAxisWidgetWidth, yAxisWidgetHeight
       )
@@ -166,6 +167,6 @@ export default class Pane {
    */
   destroy () {
     this._container.removeChild(this._element)
-    delete this
+    // delete this
   }
 }

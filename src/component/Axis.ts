@@ -4,7 +4,7 @@ import ChartData from '../data/ChartData';
 
  //刻度单位
 export  class Tick{
-  v:string  // 刻度显示的字符串
+  v:any  // 刻度显示的字符串
   x:number  // 对应的canvas上的坐标
   oV:number // 对应的值
   y!:number

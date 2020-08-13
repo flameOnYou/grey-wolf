@@ -23,7 +23,7 @@
  * 
  * @returns {string|*}
  */
-export function formatValue (data:any, key:string, defaultValue = '--') {
+export function formatValue (data:any, key:string, defaultValue:any = '--') {
   if (data) {
     const value = data[key]
     if (value || value === 0 || value === false) {

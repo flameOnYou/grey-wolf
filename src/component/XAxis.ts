@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import Axis from './Axis'
+import Axis, { Tick } from './Axis'
 import { calcTextWidth, getFont } from '../utils/canvas'
 import { formatDate } from '../utils/format'
 
@@ -24,8 +24,8 @@ export default class XAxis extends Axis {
     return { min, max, range }
   }
 
-  _computeOptimalTicks (ticks:any) {
-    const optimalTicks = []
+  _computeOptimalTicks (ticks:Array<Tick>) {
+    const optimalTicks:Tick[] = new Array()
     const tickLength = ticks.length
     const dataList = this._chartData.dataList()
     if (tickLength > 0) {
@@ -56,7 +56,8 @@ export default class XAxis extends Axis {
           label = this._optimalTickLabel(dateTimeFormat, timestamp, preTimestamp) || label
         }
         const x = this.convertToPixel(pos)
-        optimalTicks.push({ v: label, x, oV: timestamp })
+        const tk:Tick = new Tick(label, x, timestamp)
+        optimalTicks.push(tk)
       }
       const optimalTickLength = optimalTicks.length
       if (optimalTickLength === 1) {
