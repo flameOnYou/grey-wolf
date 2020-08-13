@@ -1,11 +1,90 @@
 import { defaultStyleOptions } from './options/styleOptions'
 import { createNewTechnicalIndicator, createTechnicalIndicators } from './technicalindicator/technicalIndicatorControl'
+import Bar from './Bar'
+import { isFunction, merge, clone, isValid, isNumber, isArray, isObject } from '../utils/typeChecks'
+import { formatValue } from '../utils/format'
+import TechnicalIndicator, { TechnicalIndicatorSeries } from './technicalindicator/TechnicalIndicator'
+import { DEV } from '../utils/env'
+import { Point, CrossHair } from '../utils/shape'
+import Pane from '../pane/Pane'
+
+const MAX_DATA_SPACE = 30
+const MIN_DATA_SPACE = 3
+
+export const GraphicMarkType = {
+  NONE: 'none',
+  HORIZONTAL_STRAIGHT_LINE: 'horizontalStraightLine',
+  VERTICAL_STRAIGHT_LINE: 'verticalStraightLine',
+  STRAIGHT_LINE: 'straightLine',
+  HORIZONTAL_RAY_LINE: 'horizontalRayLine',
+  VERTICAL_RAY_LINE: 'verticalRayLine',
+  RAY_LINE: 'rayLine',
+  HORIZONTAL_SEGMENT_LINE: 'horizontalSegmentLine',
+  VERTICAL_SEGMENT_LINE: 'verticalSegmentLine',
+  SEGMENT_LINE: 'segmentLine',
+  PRICE_LINE: 'priceLine',
+  PRICE_CHANNEL_LINE: 'priceChannelLine',
+  PARALLEL_STRAIGHT_LINE: 'parallelStraightLine',
+  FIBONACCI_LINE: 'fibonacciLine'
+}
+
+export const InvalidateLevel = {
+  NONE: 0,
+  GRAPHIC_MARK: 1,
+  FLOAT_LAYER: 2,
+  MAIN: 3,
+  FULL: 4
+}
+
 
 export default class ChartData {
     _styleOptions:any
     _invalidateHandler:any
     _technicalIndicators:any
+    _pricePrecision:number
     
+    //
+    _volumePrecision:number
+    _dateTimeFormat:Intl.DateTimeFormat
+    _dataList:Array<Bar>
+    _loading :Boolean
+    _loadMoreCallback:any
+    _more:true
+    // 可见区域数据占用的空间
+    _totalDataSpace:number
+    // 每一条数据的空间
+    _dataSpace : number
+    // bar的空间
+    _barSpace : any
+    // 向右偏移的空间
+    _offsetRightSpace :number
+    // 向右偏移的数量
+    _offsetRightBarCount :number
+    // 左边最小可见bar的个数
+    _leftMinVisibleBarCount :number
+    // 右边最小可见bar的个数
+    _rightMinVisibleBarCount:number
+    // 开始绘制的索引
+    _from :number
+    // 结束的索引
+    _to :number
+
+    // 十字光标信息
+    _crossHair : CrossHair
+    // 用来记录开始拖拽时向右偏移的数量
+    _preOffsetRightBarCount:number
+
+    // 当前绘制的标记图形的类型
+    _graphicMarkType = GraphicMarkType.NONE
+    // 标记图形点
+    _graphicMarkPoint :Point
+    // 拖拽标记图形标记
+    _dragGraphicMarkFlag = false
+    // 绘图标记数据
+    _graphicMarkDatas : any
+
+    
+
     constructor (styleOptions:any, invalidateHandler:any) {
       // 刷新持有者
       this._invalidateHandler = invalidateHandler
@@ -58,7 +137,7 @@ export default class ChartData {
       this._to = 0
   
       // 十字光标信息
-      this._crossHair = {}
+      this._crossHair = new CrossHair()
       // 用来记录开始拖拽时向右偏移的数量
       this._preOffsetRightBarCount = 0
   
@@ -98,7 +177,7 @@ export default class ChartData {
         fibonacciLine: []
       }
     }
-  
+    
     /**
      * 加载更多持有者
      * @private
@@ -129,7 +208,7 @@ export default class ChartData {
      * @returns {boolean}
      * @private
      */
-    _innerSetDataSpace (dataSpace) {
+    _innerSetDataSpace (dataSpace:number) {
       if (!dataSpace || dataSpace < MIN_DATA_SPACE || dataSpace > MAX_DATA_SPACE || this._dataSpace === dataSpace) {
         return false
       }
@@ -149,7 +228,7 @@ export default class ChartData {
      * 设置样式配置
      * @param options
      */
-    applyStyleOptions (options) {
+    applyStyleOptions (options:any) {
       merge(this._styleOptions, options)
     }
   
@@ -158,7 +237,7 @@ export default class ChartData {
      * @returns {function(Array<string>, string, string): Promise}
      */
     technicalIndicatorCalcParams () {
-      const calcParams = {}
+      const calcParams :{[key:string]:any} = {}
       for (const name in this._technicalIndicators) {
         calcParams[name] = clone(this._technicalIndicators[name].calcParams)
       }
@@ -169,7 +248,7 @@ export default class ChartData {
      * 根据指标类型获取指标类
      * @param technicalIndicatorType
      */
-    technicalIndicator (technicalIndicatorType) {
+    technicalIndicator (technicalIndicatorType:any) {
       return this._technicalIndicators[technicalIndicatorType] || {}
     }
   
@@ -185,7 +264,7 @@ export default class ChartData {
      * 数量精度
      * @returns {number}
      */
-    volumePrecision () {
+    volumePrecision (): number {
       return this._volumePrecision
     }
   
@@ -193,7 +272,7 @@ export default class ChartData {
      * 获取时间格式化
      * @returns {Intl.DateTimeFormat | Intl.DateTimeFormat}
      */
-    dateTimeFormat () {
+    dateTimeFormat (): Intl.DateTimeFormat | Intl.DateTimeFormat {
       return this._dateTimeFormat
     }
   
@@ -201,7 +280,7 @@ export default class ChartData {
      * 设置时区
      * @param timezone
      */
-    setTimezone (timezone) {
+    setTimezone (timezone:any) {
       let dateTimeFormat
       try {
         dateTimeFormat = new Intl.DateTimeFormat(
@@ -232,7 +311,7 @@ export default class ChartData {
      * @param pricePrecision
      * @param volumePrecision
      */
-    applyPrecision (pricePrecision, volumePrecision) {
+    applyPrecision (pricePrecision:number, volumePrecision:number) {
       const pricePrecisionValid = isValid(pricePrecision) && isNumber(pricePrecision) && pricePrecision >= 0
       const volumePrecisionValid = isValid(volumePrecision) && isNumber(volumePrecision) && volumePrecision >= 0
       if (pricePrecisionValid) {
@@ -264,7 +343,7 @@ export default class ChartData {
      * @param precision
      * @param technicalIndicatorType
      */
-    applyTechnicalIndicatorPrecision (precision, technicalIndicatorType) {
+    applyTechnicalIndicatorPrecision (precision:number, technicalIndicatorType:any) {
       const technicalIndicator = this.technicalIndicator(technicalIndicatorType)
       if (technicalIndicator) {
         technicalIndicator.precision = precision
@@ -292,41 +371,38 @@ export default class ChartData {
       this._more = true
       this._loading = true
       this._dataList = []
-      this._xTimestamp_map = {}
       this._from = 0
       this._to = 0
     }
   
+    
     /**
      * 添加数据
      * @param data
      * @param pos
      * @param more
      */
-    addData (data, pos, more) {
-      if (isObject(data)) {
-        if (isArray(data)) {
-          this._loading = false
-          this._more = isBoolean(more) ? more : true
-          const isFirstAdd = this._dataList.length === 0
-          this._dataList = data.concat(this._dataList)
-          if (isFirstAdd) {
-            this.setOffsetRightSpace(this._offsetRightSpace)
-          } else {
-            this.adjustOffsetBarCount()
-          }
-        } else {
-          const dataSize = this._dataList.length
-          if (pos >= dataSize) {
-            this._dataList.push(data)
-            if (this._offsetRightBarCount < 0) {
-              this._offsetRightBarCount -= 1
-            }
-            this.adjustOffsetBarCount()
-          } else {
-            this._dataList[pos] = data
-          }
+    addDataList (data:Bar, pos:number){
+      const dataSize = this._dataList.length
+      if (pos >= dataSize) {
+        this._dataList.push(data)
+        if (this._offsetRightBarCount < 0) {
+          this._offsetRightBarCount -= 1
         }
+        this.adjustOffsetBarCount()
+      } else {
+        this._dataList[pos] = data
+      }
+    }
+
+    addData (data:Array<Bar>) {
+      this._loading = false
+      const isFirstAdd = this._dataList.length === 0
+      this._dataList = data.concat(this._dataList)
+      if (isFirstAdd) {
+        this.setOffsetRightSpace(this._offsetRightSpace)
+      } else {
+        this.adjustOffsetBarCount()
       }
     }
   
@@ -359,7 +435,7 @@ export default class ChartData {
      * 设置一条数据的空间
      * @param dataSpace
      */
-    setDataSpace (dataSpace) {
+    setDataSpace (dataSpace:number) {
       if (this._innerSetDataSpace(dataSpace)) {
         this.adjustOffsetBarCount()
         this._invalidateHandler()
@@ -370,7 +446,7 @@ export default class ChartData {
      * 设置可见区域数据占用的总空间
      * @param totalSpace
      */
-    setTotalDataSpace (totalSpace) {
+    setTotalDataSpace (totalSpace:number) {
       if (this._totalDataSpace === totalSpace) {
         return
       }
@@ -382,7 +458,7 @@ export default class ChartData {
      * 设置右边可以偏移的空间
      * @param space
      */
-    setOffsetRightSpace (space) {
+    setOffsetRightSpace (space:number) {
       this._offsetRightSpace = space
       this._offsetRightBarCount = space / this._dataSpace
       this.adjustOffsetBarCount()
@@ -392,7 +468,7 @@ export default class ChartData {
      * 设置左边可见的最小bar数量
      * @param barCount
      */
-    setLeftMinVisibleBarCount (barCount) {
+    setLeftMinVisibleBarCount (barCount:number) {
       if (isNumber(barCount) && barCount > 0) {
         this._leftMinVisibleBarCount = Math.ceil(barCount)
       }
@@ -402,7 +478,7 @@ export default class ChartData {
      * 设置右边可见的最小bar数量
      * @param barCount
      */
-    setRightMinVisibleBarCount (barCount) {
+    setRightMinVisibleBarCount (barCount:number) {
       if (isNumber(barCount) && barCount > 0) {
         this._rightMinVisibleBarCount = Math.ceil(barCount)
       }
@@ -437,8 +513,8 @@ export default class ChartData {
      * @param point
      * @param paneTag
      */
-    setCrossHairPointPaneTag (point, paneTag) {
-      const crossHair = {}
+    setCrossHairPointPaneTag (point:Point, paneTag:any) {
+      const crossHair = new CrossHair()
       if (point) {
         crossHair.x = point.x
         crossHair.y = point.y
@@ -462,7 +538,7 @@ export default class ChartData {
      * 滚动
      * @param distance
      */
-    scroll (distance) {
+    scroll (distance:number) {
       const distanceBarCount = distance / this._dataSpace
       this._offsetRightBarCount = this._preOffsetRightBarCount - distanceBarCount
       this.adjustOffsetBarCount()
@@ -474,7 +550,7 @@ export default class ChartData {
      * @param x
      * @returns {number}
      */
-    coordinateToFloatIndex (x) {
+    coordinateToFloatIndex (x:number) {
       const dataSize = this._dataList.length
       const deltaFromRight = (this._totalDataSpace - x) / this._dataSpace
       const index = dataSize + this._offsetRightBarCount - deltaFromRight
@@ -486,9 +562,10 @@ export default class ChartData {
      * @param scale
      * @param point
      */
-    zoom (scale, point) {
+    zoom (scale:number, point:Point) {
       if (!point || isValid(point.x)) {
-        point = { x: isValid(this._crossHair.x) ? this._crossHair.x : this._totalDataSpace / 2 }
+        const x =  isValid(this._crossHair.x) ? this._crossHair.x : this._totalDataSpace / 2 
+        point = new Point(x, 0)
       }
       const floatIndexAtZoomPoint = this.coordinateToFloatIndex(point.x)
       const dataSpace = this._dataSpace + scale * (this._dataSpace / 10)
@@ -542,7 +619,7 @@ export default class ChartData {
      * 设置图形标记类型
      * @param graphicMarkType
      */
-    setGraphicMarkType (graphicMarkType) {
+    setGraphicMarkType (graphicMarkType:string) {
       this._graphicMarkType = graphicMarkType
     }
   
@@ -558,7 +635,7 @@ export default class ChartData {
      * 设置图形标记拖拽标记
      * @param flag
      */
-    setDragGraphicMarkFlag (flag) {
+    setDragGraphicMarkFlag (flag:boolean) {
       this._dragGraphicMarkFlag = flag
     }
   
@@ -574,7 +651,7 @@ export default class ChartData {
      * 设置图形标记开始的点
      * @param point
      */
-    setGraphicMarkPoint (point) {
+    setGraphicMarkPoint (point:Point) {
       this._graphicMarkPoint = point
     }
   
@@ -590,7 +667,7 @@ export default class ChartData {
      * 设置图形标记的数据
      * @param datas
      */
-    setGraphicMarkData (datas) {
+    setGraphicMarkData (datas:Array<Bar>) {
       const shouldInvalidate = this.shouldInvalidateGraphicMark()
       this._graphicMarkDatas = clone(datas)
       if (shouldInvalidate) {
@@ -606,7 +683,7 @@ export default class ChartData {
      * 设置加载更多
      * @param callback
      */
-    loadMore (callback) {
+    loadMore (callback: any) {
       this._loadMoreCallback = callback
     }
   
@@ -630,19 +707,17 @@ export default class ChartData {
      * 添加一个自定义指标
      * @param technicalIndicatorInfo
      */
-    addCustomTechnicalIndicator (technicalIndicatorInfo) {
-      const info = createNewTechnicalIndicator(technicalIndicatorInfo || {})
-      if (info) {
-        // 将生成的新的指标类放入集合
-        this._technicalIndicators[technicalIndicatorInfo.name] = info
-      }
+    addCustomTechnicalIndicator (technicalIndicatorInfo:TechnicalIndicator) {
+      // 将生成的新的指标类放入集合
+        this._technicalIndicators[technicalIndicatorInfo.name] = technicalIndicatorInfo
+      
     }
   
     /**
      * 计算指标
      * @param pane
      */
-    calcTechnicalIndicator (pane) {
+    calcTechnicalIndicator (pane:TechnicalIndicatorPane) {
       const technicalIndicator = pane.technicalIndicator()
       if (technicalIndicator) {
         const { calcParams, precision } = this._technicalIndicators[technicalIndicator.name] || {}

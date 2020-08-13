@@ -7,6 +7,7 @@ export  class Tick{
   v:string  // 刻度显示的字符串
   x:number  // 对应的canvas上的坐标
   oV:number // 对应的值
+  y!:number
 
   constructor(v:string, x:number, oV:number){
     this.v = v;

@@ -9,3 +9,12 @@ export class Point{
         this.length = 0;
     } 
 }
+
+export class CrossHair{
+    x:number=0;
+    y:number=0;
+    paneTag:any;
+    
+    constructor() { 
+    } 
+}
