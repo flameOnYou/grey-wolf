@@ -19,10 +19,13 @@
  * @returns {number}
  */
 export function getPixelRatio (ctx:any) {
-  const backingStore = ctx.ownerDocument ||
-    ctx.ownerDocument.defaultView ||
-    ctx.ownerDocument.devicePixelRatio  || 1
-  return (window.devicePixelRatio || 1) / backingStore
+  const backingStore = ctx.backingStorePixelRatio ||
+  ctx.webkitBackingStorePixelRatio ||
+  ctx.mozBackingStorePixelRatio ||
+  ctx.msBackingStorePixelRatio ||
+  ctx.oBackingStorePixelRatio ||
+  ctx.backingStorePixelRatio || 1
+return (window.devicePixelRatio || 1) / backingStore
 }
 
 /**

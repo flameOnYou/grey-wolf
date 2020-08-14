@@ -22,7 +22,7 @@
         "type": "chrome",
         "request": "launch",
         "name": "Launch Chrome against localhost",
-        "url":"http://localhost:8001/lib/index.html",
+        "url":"http://localhost:8001/html/index.html",
         "webRoot": "${workspaceFolder}"
       },
     //   {

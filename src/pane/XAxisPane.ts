@@ -16,14 +16,15 @@
 import XAxisWidget from '../widget/XAxisWidget'
 import XAxis from '../component/XAxis'
 import { Pane } from './Pane'
+import YAxis from '../component/YAxis'
 
 export default class XAxisPane extends Pane {
 
     _xAxis!:XAxis
 
-  _createYAxisWidget(container: HTMLElement, props: any): import("../widget/YAxisWidget").default {
-      throw new Error("Method not implemented.")
-  }
+  // _createYAxisWidget(container: HTMLElement, props: any): YAxis {
+  //     // throw new Error("Method not implemented.")
+  // }
   _initBefore () {
     this._xAxis = new XAxis(this._chartData)
   }

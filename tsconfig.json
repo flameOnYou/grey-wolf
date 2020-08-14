@@ -2,11 +2,13 @@
     "compilerOptions": {
       "target": "es6",
       "declaration": true,
-      "outDir": "./lib",
+      "outDir": "./dist/",
       "strict": true,
-      "lib": ["es6","dom"]
+      "lib": ["es6","dom"],
+      "sourceMap":true,
+      "noImplicitAny": true,
+      "allowJs": true,
     },
-    // "allowJs": true,
     
     "include": ["src"],
     "exclude": ["node_modules", "**/__tests__/*"],

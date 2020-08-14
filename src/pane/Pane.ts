@@ -23,7 +23,7 @@ export abstract class Pane {
   _chartData :ChartData
   _element!:HTMLElement
   _mainWidget:Widget
-  _yAxisWidget : YAxisWidget
+  _yAxisWidget: YAxisWidget | null
 
   constructor (props:any) {
     this._height = -1
@@ -66,7 +66,9 @@ export abstract class Pane {
    * @param props
    * @private
    */
-  abstract _createYAxisWidget (container:HTMLElement, props:any):YAxisWidget;
+  _createYAxisWidget (container:HTMLElement, props:any):YAxisWidget | null{
+    return null
+  };
 
   /**
    * 计算轴

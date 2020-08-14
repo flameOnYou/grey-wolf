@@ -1,7 +1,22 @@
 <!DOCTYPE html>
 <html>
-    <head><title>TypeScript Hello Web</title></head>
+    <head>
+        <title>TypeScript Hello Web</title>
+        <link rel="stylesheet" type="text/css" href="./index.css" />
+    </head>
+    <script src="./common/jquery-2.1.4.min.js"></script>
+    <script type="module" src="../dist/bundle.js"></script>
+
     <body>
-        <script type="module" src="../lib/index.js"></script>
+        <body>
+            <div class="k-line-chart-container">
+                <p class="k-line-chart-title">自定义技术指标</p>
+                <div id="stock_chart" class="k-line-chart ichat" />
+            </div>
+        </body>
+        
     </body>
+    <script>
+        // init('stock_chart')
+    </script>
 </html>

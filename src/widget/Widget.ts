@@ -19,26 +19,26 @@ import { View } from '../view/View'
 export default abstract class Widget {
     _width = 0
     _height = 0
-    _element: HTMLElement
+    _element!: HTMLElement
     _mainView:View
-    _expandView:View
+    _expandView:View|null
     _floatLayerView:View
 
   constructor (props:any) {
 
     this._initElement(props.container)
-    this._element = document.createElement('div')
     this._mainView = this._createMainView(this._element, props)
     this._expandView = this._createExpandView(this._element, props)
     this._floatLayerView = this._createFloatLayerView(this._element, props)
   }
-
+  
   /**
    * 初始化element
    * @param container
    * @private
    */
   _initElement (container:HTMLElement) {
+    this._element = document.createElement('div')
     this._element.style.top = '0'
     this._element.style.margin = '0'
     this._element.style.padding = '0'
@@ -61,7 +61,9 @@ export default abstract class Widget {
    * @param props
    * @private
    */
-  abstract _createExpandView (container:HTMLElement, props:any):View;
+  _createExpandView (container:HTMLElement, props:any):View|null{
+    return null;
+  };
 
   /**
    * 创建浮层view

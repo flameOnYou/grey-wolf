@@ -17,9 +17,9 @@ import YAxisView from '../view/YAxisView'
 import YAxisFloatLayerView from '../view/YAxisFloatLayerView'
 
 export default class YAxisWidget extends Widget {
-  _createExpandView(container: HTMLElement, props: any): import("../view/View").View {
-      throw new Error("Method not implemented.")
-  }
+  // _createExpandView(container: HTMLElement, props: any): import("../view/View").View {
+  //     throw new Error("Method not implemented.")
+  // }
   _createMainView (container:HTMLElement, props:any) {
     return new YAxisView(container, props.chartData, props.yAxis, props.additionalDataProvider)
   }

@@ -326,7 +326,7 @@ export default class ChartPane {
       if (isFunction(extendFun)) {
         extendFun()
       }
-      this._chartData.addDataList(dataList, 0, more)
+      this._chartData.addDataList(dataList, 0)
       this._calcAllPaneTechnicalIndicator()
     }
   }
@@ -366,7 +366,7 @@ export default class ChartPane {
       if (timestamp === lastDataTimestamp) {
         pos = dataSize - 1
       }
-      this._chartData.addData(data, pos)
+      this._chartData.addData(data, pos,false)
       this._calcAllPaneTechnicalIndicator()
     }
   }

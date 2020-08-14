@@ -90,9 +90,10 @@ export default class ChartData {
       // 刷新持有者
       this._invalidateHandler = invalidateHandler
       // 样式配置
-    //   this._styleOptions = clone(defaultStyleOptions)
-        Object.assign(defaultStyleOptions,this._styleOptions)
-      
+      console.log('克隆样式',defaultStyleOptions)
+      this._styleOptions = clone(defaultStyleOptions)
+        // Object.assign(defaultStyleOptions,this._styleOptions)
+        console.log('克隆结果',this._styleOptions)
     //   merge(this._styleOptions, styleOptions)
       // 所有技术指标类集合
       this._technicalIndicators = createTechnicalIndicators()
@@ -359,7 +360,7 @@ export default class ChartData {
      * 获取数据源
      * @returns {[]|*[]}
      */
-    dataList () {
+    dataList ():Bar[] {
       return this._dataList
     }
   
@@ -383,7 +384,7 @@ export default class ChartData {
      * @param pos
      * @param more
      */
-    addDataList (data:Bar, pos:number,more:boolean){
+    addData (data:Bar, pos:number,more:boolean){
       const dataSize = this._dataList.length
       if (pos >= dataSize) {
         this._dataList.push(data)
@@ -396,7 +397,7 @@ export default class ChartData {
       }
     }
 
-    addData (data:Array<Bar>,pos:number) {
+    addDataList (data:Array<Bar>,pos:number) {
       this._loading = false
       const isFirstAdd = this._dataList.length === 0
       this._dataList = data.concat(this._dataList)

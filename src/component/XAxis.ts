@@ -15,6 +15,7 @@
 import Axis, { Tick } from './Axis'
 import { calcTextWidth, getFont } from '../utils/canvas'
 import { formatDate } from '../utils/format'
+import Bar from '../data/Bar'
 
 export default class XAxis extends Axis {
   _computeMinMaxValue () {
@@ -27,7 +28,8 @@ export default class XAxis extends Axis {
   _computeOptimalTicks (ticks:Array<Tick>) {
     const optimalTicks:Tick[] = new Array()
     const tickLength = ticks.length
-    const dataList = this._chartData.dataList()
+    const dataList:Bar[] = this._chartData.dataList()
+    console.log("dataList1",dataList)
     if (tickLength > 0) {
       const dateTimeFormat = this._chartData.dateTimeFormat()
       const tickText = this._chartData.styleOptions().xAxis.tickText
@@ -46,7 +48,8 @@ export default class XAxis extends Axis {
       }
       for (let i = 0; i < tickLength; i += tickCountDif) {
         const pos = parseInt(ticks[i].v, 10)
-        const kLineData = dataList[pos]
+        const kLineData:any = dataList[pos]
+        console.log("dataList2",dataList)
         const timestamp = kLineData.timestamp
         let label = formatDate(dateTimeFormat, timestamp, 'hh:mm')
         if (i !== 0) {

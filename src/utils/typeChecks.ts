@@ -35,10 +35,9 @@ export function merge (target:any, source:any) {
   }
 }
 
-export function clone (target:any) {
-  
-
-  return target
+export function clone (source:Object) :any{
+  let newObject = JSON.parse(JSON.stringify(source));
+	    return newObject;
 }
 
 export function isArray (value:any) {
